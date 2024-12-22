@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, make_response
 import spacy
 from spacy import displacy
 
@@ -51,7 +51,10 @@ DEP_LABELS_MAPPING = {
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    # Render the HTML template and manually set the Content-Type header
+    response = make_response(render_template("index.html"))
+    response.headers["Content-Type"] = "text/html"
+    return response
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -83,3 +86,4 @@ def generate():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
