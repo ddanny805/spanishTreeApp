@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, make_response
+from flask import Flask, request, jsonify, render_template, Response
 import spacy
 from spacy import displacy
 
@@ -51,10 +51,7 @@ DEP_LABELS_MAPPING = {
 
 @app.route("/")
 def index():
-    # Render the HTML template and manually set the Content-Type header
-    response = make_response(render_template("index.html"))
-    response.headers["Content-Type"] = "text/html"
-    return response
+    return render_template("index.html")
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -82,8 +79,15 @@ def generate():
     for eng_pos, spa_pos in POS_MAPPING.items():
         svg = svg.replace(f">{eng_pos}<", f">{spa_pos}<")
 
-    return jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
+    # Create a response with proper headers
+    response = jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
+    
+    # Set headers
+    response.headers["Content-Type"] = "application/json"
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"  # Prevent caching
+    response.headers["X-Content-Type-Options"] = "nosniff"  # Prevent MIME sniffing
+    
+    return response
 
 if __name__ == "__main__":
     app.run(debug=True)
-
