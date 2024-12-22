@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    @app.route('/')
-def home():
-    return render_template('index.html')
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualizador de Árbol Sintáctico</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <!-- Reference to CSS with versioning -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=1">
 </head>
 <body>
     <div class="container">
@@ -22,7 +19,11 @@ def home():
             <div id="tree-container"></div>
         </div>
     </div>
+
+    <!-- Add jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/static/script.js"></script>
+    
+    <!-- Reference to JS with versioning -->
+    <script src="{{ url_for('static', filename='script.js') }}?v=1"></script>
 </body>
 </html>
