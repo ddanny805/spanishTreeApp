@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 import spacy
 from spacy import displacy
-import os
 
 app = Flask(__name__)
 
@@ -50,9 +49,9 @@ DEP_LABELS_MAPPING = {
     "dep": "dependencia",
 }
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 @app.route("/generate", methods=["POST"])
 def generate():
