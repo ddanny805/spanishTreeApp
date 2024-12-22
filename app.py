@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify, render_template, Response
+from flask import Flask, request, jsonify, render_template, send_from_directory
 import spacy
 from spacy import displacy
+import os
 
 app = Flask(__name__)
 
@@ -81,12 +82,39 @@ def generate():
 
     # Create a response with proper headers
     response = jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
-    
+
     # Set headers
     response.headers["Content-Type"] = "application/json"
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"  # Prevent caching
     response.headers["X-Content-Type-Options"] = "nosniff"  # Prevent MIME sniffing
-    
+
+    return response
+
+# Override send_from_directory to add proper headers for static files
+@app.route("/static/<path:filename>")
+def send_static(filename):
+    # Get the full file path
+    static_folder = os.path.join(app.root_path, 'static')
+    file_path = os.path.join(static_folder, filename)
+
+    # Send the file with appropriate headers
+    response = send_from_directory(static_folder, filename)
+
+    # Set headers for static files
+    response.headers["Cache-Control"] = "public, max-age=31536000"  # Cache for 1 year
+    response.headers["X-Content-Type-Options"] = "nosniff"  # Prevent MIME sniffing
+
+    # Set Content-Type based on file extension
+    if filename.endswith(".css"):
+        response.headers["Content-Type"] = "text/css"
+    elif filename.endswith(".js"):
+        response.headers["Content-Type"] = "application/javascript"
+    elif filename.endswith(".jpg") or filename.endswith(".jpeg"):
+        response.headers["Content-Type"] = "image/jpeg"
+    elif filename.endswith(".png"):
+        response.headers["Content-Type"] = "image/png"
+    # You can add more content types based on your static files
+
     return response
 
 if __name__ == "__main__":
