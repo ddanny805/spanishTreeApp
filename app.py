@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify, render_template, make_response
+from flask import Flask, request, jsonify, render_template, make_response, send_from_directory
 import spacy
 from spacy import displacy
+import os
 
 app = Flask(__name__)
 
@@ -51,11 +52,9 @@ DEP_LABELS_MAPPING = {
 
 @app.after_request
 def add_headers(response):
-    """Add necessary headers to the response."""
-    response.headers["Content-Type"] = "text/html; charset=utf-8"
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
+    """Add necessary headers to all responses."""
+    response.headers["Content-Type"] = response.headers.get("Content-Type", "text/html; charset=utf-8")
+    response.headers["Cache-Control"] = "max-age=180, must-revalidate"
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
@@ -91,12 +90,18 @@ def generate():
     for eng_pos, spa_pos in POS_MAPPING.items():
         svg = svg.replace(f">{eng_pos}<", f">{spa_pos}<")
 
-    # Wrap SVG in a proper response with headers
     response = make_response(jsonify({"breakdown": "\n".join(breakdown), "tree": svg}))
     response.headers["Content-Type"] = "application/json; charset=utf-8"
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
+    response.headers["Cache-Control"] = "max-age=180, must-revalidate"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
+@app.route("/static/<path:filename>")
+def static_files(filename):
+    """Serve static files with proper headers."""
+    static_folder = os.path.join(app.root_path, "static")
+    response = make_response(send_from_directory(static_folder, filename))
+    response.headers["Cache-Control"] = "max-age=180, must-revalidate"
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
