@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualizador de Árbol Sintáctico</title>
-    <!-- Reference to CSS with versioning -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=1">
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <div class="container">
@@ -19,11 +18,7 @@
             <div id="tree-container"></div>
         </div>
     </div>
-
-    <!-- Add jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <!-- Reference to JS with versioning -->
-    <script src="{{ url_for('static', filename='script.js') }}?v=1"></script>
+    <script src="/static/script.js"></script>
 </body>
 </html>
