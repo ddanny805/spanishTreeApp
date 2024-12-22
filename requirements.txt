@@ -5,3 +5,4 @@ es_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/es
 spacy==3.8.3
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
+gunicorn==22.0.0
