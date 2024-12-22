@@ -1,19 +1,13 @@
 from flask import Flask, request, jsonify, render_template
 import spacy
 from spacy import displacy
+import os
 
 app = Flask(__name__)
 
 # Load spaCy Spanish model
 nlp = spacy.load("es_core_news_sm")
 
-@app.route('/')
-def home():
-    return render_template('templates/index.html')
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
-    
 # Mapping of POS tags from English to Spanish
 POS_MAPPING = {
     "PROPN": "Nombre propio",
@@ -56,9 +50,9 @@ DEP_LABELS_MAPPING = {
     "dep": "dependencia",
 }
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route("/generate", methods=["POST"])
 def generate():
