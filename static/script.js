@@ -9,14 +9,6 @@ $(document).ready(function () {
         const sentence = $("#sentence").val();
         $("#breakdown").text("Generando análisis...");
         $("#tree-container").html("<p>Generando árbol...</p>");
-        
-        // Check if the sentence is not empty before making the request
-        if (!sentence.trim()) {
-            $("#breakdown").text("Por favor ingresa una oración.");
-            $("#tree-container").empty();
-            return;
-        }
-
         $.ajax({
             url: "/generate",
             method: "POST",
@@ -28,12 +20,12 @@ $(document).ready(function () {
                     $("#tree-container").html(response.tree); // Inject SVG
                 } else {
                     $("#breakdown").text("Error: No se pudo generar el análisis.");
-                    $("#tree-container").html("<p>Error: No se pudo generar el árbol.</p>");
+                    $("#tree-container").text("Error: No se pudo generar el árbol.");
                 }
             },
             error: function () {
                 $("#breakdown").text("Error: No se pudo generar el análisis.");
-                $("#tree-container").html("<p>Error: No se pudo generar el árbol.</p>");
+                $("#tree-container").text("Error: No se pudo generar el árbol.");
             },
         });
     });
