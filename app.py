@@ -7,6 +7,13 @@ app = Flask(__name__)
 # Load spaCy Spanish model
 nlp = spacy.load("es_core_news_sm")
 
+@app.route('/')
+def home():
+    return render_template('templates/index.html')
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
+    
 # Mapping of POS tags from English to Spanish
 POS_MAPPING = {
     "PROPN": "Nombre propio",
