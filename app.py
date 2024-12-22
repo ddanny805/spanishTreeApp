@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory, Response
+from flask import Flask, request, jsonify, render_template, send_from_directory, make_response
 import spacy
 from spacy import displacy
 import os
@@ -55,19 +55,29 @@ def add_global_headers(response):
     """
     Apply headers to all responses globally.
     """
-    response.headers["Content-Type"] = response.headers.get("Content-Type", "application/octet-stream")
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Content-Type"] = response.headers.get("Content-Type", "application/json")
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
+    response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    """
+    Serve the main index page.
+    """
+    response = make_response(render_template("index.html"))
+    response.headers["Cache-Control"] = "public, max-age=0"
+    response.headers["Content-Type"] = "text/html"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
 
 @app.route("/generate", methods=["POST"])
 def generate():
+    """
+    Process the sentence and return breakdown and tree as JSON.
+    """
     data = request.get_json()
     sentence = data.get("sentence", "")
 
@@ -92,7 +102,10 @@ def generate():
     for eng_pos, spa_pos in POS_MAPPING.items():
         svg = svg.replace(f">{eng_pos}<", f">{spa_pos}<")
 
-    return jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
+    response = jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
 
 @app.route("/static/<path:filename>")
 def send_static(filename):
@@ -100,13 +113,9 @@ def send_static(filename):
     Serve static files with explicit headers.
     """
     static_folder = os.path.join(app.root_path, 'static')
-    response = send_from_directory(static_folder, filename)
-
-    # Set headers explicitly
-    response.headers["Cache-Control"] = "public, max-age=31536000"
-    response.headers["X-Content-Type-Options"] = "nosniff"
-
-    # Explicitly set Content-Type if Flask doesn't do it
+    response = make_response(send_from_directory(static_folder, filename))
+    
+    # Explicitly set headers for static files
     if filename.endswith(".css"):
         response.headers["Content-Type"] = "text/css"
     elif filename.endswith(".js"):
@@ -115,6 +124,9 @@ def send_static(filename):
         response.headers["Content-Type"] = "image/jpeg"
     elif filename.endswith(".png"):
         response.headers["Content-Type"] = "image/png"
+
+    response.headers["Cache-Control"] = "public, max-age=31536000"
+    response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
 if __name__ == "__main__":
