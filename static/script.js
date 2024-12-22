@@ -1,10 +1,4 @@
 $(document).ready(function () {
-    // Automatically adjust the height of the textarea as the user types
-    $("#sentence").on("input", function () {
-        $(this).css("height", "auto").css("height", this.scrollHeight + "px");
-    });
-
-    // Generate button functionality
     $("#generate").click(function () {
         const sentence = $("#sentence").val();
         $("#breakdown").text("Generando análisis...");
@@ -12,8 +6,10 @@ $(document).ready(function () {
         $.ajax({
             url: "/generate",
             method: "POST",
-            contentType: "application/json",
-            dataType: "json",  // **Change added here**: Ensure response is treated as JSON
+            contentType: "application/json; charset=utf-8",
+            headers: {
+                "Cache-Control": "no-store, no-cache, must-revalidate"
+            },
             data: JSON.stringify({ sentence }),
             success: function (response) {
                 if (response.breakdown && response.tree) {
