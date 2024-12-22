@@ -13,6 +13,7 @@ $(document).ready(function () {
             url: "/generate",
             method: "POST",
             contentType: "application/json",
+            dataType: "json",  // **Change added here**: Ensure response is treated as JSON
             data: JSON.stringify({ sentence }),
             success: function (response) {
                 if (response.breakdown && response.tree) {
