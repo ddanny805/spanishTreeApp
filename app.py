@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template, send_from_directory, Response
 import spacy
 from spacy import displacy
 import os
@@ -50,6 +50,18 @@ DEP_LABELS_MAPPING = {
     "dep": "dependencia",
 }
 
+@app.after_request
+def add_global_headers(response):
+    """
+    Apply headers to all responses globally.
+    """
+    response.headers["Content-Type"] = response.headers.get("Content-Type", "application/octet-stream")
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -80,31 +92,21 @@ def generate():
     for eng_pos, spa_pos in POS_MAPPING.items():
         svg = svg.replace(f">{eng_pos}<", f">{spa_pos}<")
 
-    # Create a response with proper headers
-    response = jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
+    return jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
 
-    # Set headers
-    response.headers["Content-Type"] = "application/json"
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"  # Prevent caching
-    response.headers["X-Content-Type-Options"] = "nosniff"  # Prevent MIME sniffing
-
-    return response
-
-# Override send_from_directory to add proper headers for static files
 @app.route("/static/<path:filename>")
 def send_static(filename):
-    # Get the full file path
+    """
+    Serve static files with explicit headers.
+    """
     static_folder = os.path.join(app.root_path, 'static')
-    file_path = os.path.join(static_folder, filename)
-
-    # Send the file with appropriate headers
     response = send_from_directory(static_folder, filename)
 
-    # Set headers for static files
-    response.headers["Cache-Control"] = "public, max-age=31536000"  # Cache for 1 year
-    response.headers["X-Content-Type-Options"] = "nosniff"  # Prevent MIME sniffing
+    # Set headers explicitly
+    response.headers["Cache-Control"] = "public, max-age=31536000"
+    response.headers["X-Content-Type-Options"] = "nosniff"
 
-    # Set Content-Type based on file extension
+    # Explicitly set Content-Type if Flask doesn't do it
     if filename.endswith(".css"):
         response.headers["Content-Type"] = "text/css"
     elif filename.endswith(".js"):
@@ -113,8 +115,6 @@ def send_static(filename):
         response.headers["Content-Type"] = "image/jpeg"
     elif filename.endswith(".png"):
         response.headers["Content-Type"] = "image/png"
-    # You can add more content types based on your static files
-
     return response
 
 if __name__ == "__main__":
