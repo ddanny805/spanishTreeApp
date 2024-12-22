@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template, send_from_directory,
 import spacy
 from spacy import displacy
 import os
+import time
 
 app = Flask(__name__)
 
@@ -55,8 +56,8 @@ def add_global_headers(response):
     """
     Apply headers to all responses globally.
     """
-    response.headers["Content-Type"] = response.headers.get("Content-Type", "application/json")
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+    response.headers["Content-Type"] = response.headers.get("Content-Type", "application/json; charset=utf-8")
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -65,11 +66,11 @@ def add_global_headers(response):
 @app.route("/")
 def index():
     """
-    Serve the main index page.
+    Serve the main index page with appropriate headers.
     """
     response = make_response(render_template("index.html"))
-    response.headers["Cache-Control"] = "public, max-age=0"
-    response.headers["Content-Type"] = "text/html"
+    response.headers["Cache-Control"] = "no-store, max-age=0"
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
@@ -103,30 +104,34 @@ def generate():
         svg = svg.replace(f">{eng_pos}<", f">{spa_pos}<")
 
     response = jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
-    response.headers["Cache-Control"] = "no-store"
+    response.headers["Cache-Control"] = "no-store, max-age=0"
+    response.headers["Content-Type"] = "application/json; charset=utf-8"
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
 @app.route("/static/<path:filename>")
 def send_static(filename):
     """
-    Serve static files with explicit headers.
+    Serve static files with explicit headers and cache-busting query parameter.
     """
     static_folder = os.path.join(app.root_path, 'static')
     response = make_response(send_from_directory(static_folder, filename))
     
-    # Explicitly set headers for static files
+    # Append cache-busting query parameter
+    cache_buster = int(time.time())
+    response.headers["Content-Type"] = "application/octet-stream; charset=utf-8"
     if filename.endswith(".css"):
-        response.headers["Content-Type"] = "text/css"
+        response.headers["Content-Type"] = "text/css; charset=utf-8"
     elif filename.endswith(".js"):
-        response.headers["Content-Type"] = "application/javascript"
+        response.headers["Content-Type"] = "application/javascript; charset=utf-8"
     elif filename.endswith(".jpg") or filename.endswith(".jpeg"):
         response.headers["Content-Type"] = "image/jpeg"
     elif filename.endswith(".png"):
         response.headers["Content-Type"] = "image/png"
-
-    response.headers["Cache-Control"] = "public, max-age=31536000"
+    
+    response.headers["Cache-Control"] = "public, max-age=180"
     response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Cache-Busting"] = f"?v={cache_buster}"
     return response
 
 if __name__ == "__main__":
