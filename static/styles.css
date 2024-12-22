@@ -94,25 +94,3 @@ g.node circle {
     stroke: #ff0000; /* Red stroke for nodes */
     stroke-width: 1px;
 }
-
-/* Extra spacing and responsiveness adjustments */
-#sentence {
-    resize: vertical;
-    min-height: 80px;
-}
-
-#generate {
-    width: 200px; /* Make the button wider for better UX */
-}
-
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-    #sentence, #generate {
-        width: 100%; /* Make input and button full width on smaller screens */
-    }
-    #breakdown, #tree {
-        width: 100%; /* Make output sections full width on smaller screens */
-    }
-}
