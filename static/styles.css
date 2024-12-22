@@ -1,0 +1,96 @@
+/* General styles for the page */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333333;
+}
+
+h1 {
+    text-align: center;
+    color: #ff0000; /* Red heading */
+    margin: 20px 0;
+}
+
+textarea {
+    display: block;
+    margin: 20px auto;
+    width: 80%;
+    height: 100px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    resize: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+button {
+    display: block;
+    margin: 10px auto;
+    padding: 10px 20px;
+    background-color: #ff0000;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #cc0000;
+}
+
+/* Output sections */
+#breakdown, #tree {
+    margin: 20px auto;
+    width: 80%;
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+}
+
+/* Tree visualization styles */
+path.dependency {
+    stroke: #ff0000; /* Red arrows */
+    stroke-width: 2px; /* Thicker for visibility */
+    fill: none;
+}
+
+text {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    fill: #ff0000; /* Red text for words */
+    font-weight: bold; /* Bold for emphasis */
+}
+
+/* Arrowhead styles */
+marker.arrowhead path {
+    fill: #ff0000; /* Red arrowheads */
+}
+
+/* SVG container */
+svg {
+    display: block;
+    margin: 20px auto;
+    background-color: #ffffff; /* White background */
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+/* Adjustments for SVG content */
+g.node text {
+    fill: #ff0000; /* Red for sentence text */
+    font-weight: bold;
+}
+
+g.node circle {
+    fill: none; /* No fill for nodes */
+    stroke: #ff0000; /* Red stroke for nodes */
+    stroke-width: 1px;
+}
