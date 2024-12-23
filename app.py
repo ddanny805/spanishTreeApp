@@ -1,7 +1,6 @@
-from flask import Flask, request, jsonify, render_template, make_response
+from flask import Flask, request, jsonify, render_template
 import spacy
 from spacy import displacy
-import time
 
 app = Flask(__name__)
 
@@ -50,11 +49,19 @@ DEP_LABELS_MAPPING = {
     "dep": "dependencia",
 }
 
+@app.after_request
+def add_headers(response):
+    """
+    Adds necessary headers to improve compatibility, performance, and security.
+    """
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    response.headers['Cache-Control'] = 'max-age=180, public'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    return response
+
 @app.route("/")
 def index():
-    # Ensure cache busting for static files by appending version number
-    version = int(time.time())  # or use a static version like 'v1.0.0'
-    return render_template("index.html", version=version)
+    return render_template("index.html")
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -82,15 +89,7 @@ def generate():
     for eng_pos, spa_pos in POS_MAPPING.items():
         svg = svg.replace(f">{eng_pos}<", f">{spa_pos}<")
 
-    # Create a response with appropriate headers
-    response = make_response(
-        jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
-    )
-    response.headers["Content-Type"] = "application/json; charset=utf-8"
-    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"  # Strong cache control
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    
-    return response
+    return jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
 
 if __name__ == "__main__":
     app.run(debug=True)
