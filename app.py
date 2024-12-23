@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 import spacy
 from spacy import displacy
+import os
 
 app = Flask(__name__)
 
@@ -25,7 +26,6 @@ POS_MAPPING = {
     "X": "Otro",
 }
 
-# Mapping of dependency labels from English to Spanish
 DEP_LABELS_MAPPING = {
     "nsubj": "sujeto nominal",
     "cop": "verbo copulativo",
@@ -51,9 +51,7 @@ DEP_LABELS_MAPPING = {
 
 @app.after_request
 def add_headers(response):
-    """
-    Adds necessary headers to improve compatibility, performance, and security.
-    """
+    """Add required headers to all responses."""
     response.headers['Content-Type'] = 'text/html; charset=utf-8'
     response.headers['Cache-Control'] = 'max-age=180, public'
     response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -62,6 +60,15 @@ def add_headers(response):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/static/<path:filename>")
+def serve_static(filename):
+    """Serve static files with appropriate headers."""
+    response = send_from_directory('static', filename)
+    response.headers['Content-Type'] = 'text/css; charset=utf-8' if filename.endswith('.css') else response.headers['Content-Type']
+    response.headers['Cache-Control'] = 'max-age=180, public'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -93,3 +100,4 @@ def generate():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
