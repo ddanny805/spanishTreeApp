@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Visualizador de Árbol Sintáctico</title>
-    <link rel="stylesheet" href="/static/styles.css?v={{ time() }}">
+    <title>Procesador de Oraciones en Español</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?version={{ version }}">
 </head>
 <body>
     <div class="container">
-        <h1>Visualizador de Árbol Sintáctico</h1>
-        <textarea id="sentence" placeholder="Ingrese una oración en español" rows="3"></textarea>
-        <button id="generate">Generar Árbol</button>
-        <div id="output-container">
-            <h2>Desglose Gramatical:</h2>
-            <pre id="breakdown"></pre>
-            <h2>Árbol Sintáctico:</h2>
-            <div id="tree-container"></div>
+        <h1>Procesador de Oraciones en Español</h1>
+        <form id="sentence-form">
+            <textarea id="sentence-input" placeholder="Escribe una oración en español"></textarea>
+            <button type="submit">Generar análisis</button>
+        </form>
+
+        <div id="breakdown">
+            <h2>Análisis Gramatical</h2>
+            <pre id="breakdown-output"></pre>
+        </div>
+
+        <div id="tree">
+            <h2>Árbol de Dependencias</h2>
+            <div id="tree-output"></div>
         </div>
     </div>
-    <script src="/static/script.js?v={{ time() }}"></script>
+
+    <script src="{{ url_for('static', filename='script.js') }}?version={{ version }}"></script>
 </body>
 </html>
