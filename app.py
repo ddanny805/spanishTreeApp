@@ -1,7 +1,6 @@
-from flask import Flask, request, jsonify, render_template, make_response, send_from_directory
+from flask import Flask, request, jsonify, render_template, make_response
 import spacy
 from spacy import displacy
-import os
 
 app = Flask(__name__)
 
@@ -50,22 +49,12 @@ DEP_LABELS_MAPPING = {
     "dep": "dependencia",
 }
 
-@app.after_request
-def add_headers(response):
-    """Add necessary headers to all responses."""
-    response.headers["Content-Type"] = response.headers.get("Content-Type", "text/html; charset=utf-8")
-    response.headers["Cache-Control"] = "max-age=180, must-revalidate"
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    return response
-
 @app.route("/")
 def index():
-    """Serve the main HTML page."""
     return render_template("index.html")
 
 @app.route("/generate", methods=["POST"])
 def generate():
-    """Generate the linguistic breakdown and syntax tree."""
     data = request.get_json()
     sentence = data.get("sentence", "")
 
@@ -90,19 +79,14 @@ def generate():
     for eng_pos, spa_pos in POS_MAPPING.items():
         svg = svg.replace(f">{eng_pos}<", f">{spa_pos}<")
 
-    response = make_response(jsonify({"breakdown": "\n".join(breakdown), "tree": svg}))
+    # Create a response with appropriate headers
+    response = make_response(
+        jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
+    )
     response.headers["Content-Type"] = "application/json; charset=utf-8"
     response.headers["Cache-Control"] = "max-age=180, must-revalidate"
     response.headers["X-Content-Type-Options"] = "nosniff"
-    return response
-
-@app.route("/static/<path:filename>")
-def static_files(filename):
-    """Serve static files with proper headers."""
-    static_folder = os.path.join(app.root_path, "static")
-    response = make_response(send_from_directory(static_folder, filename))
-    response.headers["Cache-Control"] = "max-age=180, must-revalidate"
-    response.headers["X-Content-Type-Options"] = "nosniff"
+    
     return response
 
 if __name__ == "__main__":
