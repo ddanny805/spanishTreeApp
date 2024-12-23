@@ -1,8 +1,11 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory, make_response
+from flask import Flask, request, jsonify, render_template
 import spacy
 from spacy import displacy
 
 app = Flask(__name__)
+
+# Disable caching of static files during development
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 # Load spaCy Spanish model
 nlp = spacy.load("es_core_news_sm")
@@ -25,6 +28,7 @@ POS_MAPPING = {
     "X": "Otro",
 }
 
+# Mapping of dependency labels from English to Spanish
 DEP_LABELS_MAPPING = {
     "nsubj": "sujeto nominal",
     "cop": "verbo copulativo",
@@ -48,36 +52,9 @@ DEP_LABELS_MAPPING = {
     "dep": "dependencia",
 }
 
-
-@app.after_request
-def add_headers(response):
-    """Add headers globally."""
-    response.headers["Content-Type"] = response.headers.get("Content-Type", "text/html; charset=utf-8")
-    response.headers["Cache-Control"] = response.headers.get("Cache-Control", "no-store")
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    return response
-
-
 @app.route("/")
 def index():
-    html_response = make_response(render_template("index.html"))
-    html_response.headers["Cache-Control"] = "no-store"
-    return html_response
-
-
-@app.route("/static/<path:filename>")
-def serve_static(filename):
-    """Serve static files with proper cache and content-type."""
-    response = make_response(send_from_directory("static", filename))
-    if filename.endswith(".css"):
-        response.headers["Content-Type"] = "text/css; charset=utf-8"
-    elif filename.endswith(".js"):
-        response.headers["Content-Type"] = "application/javascript; charset=utf-8"
-    elif filename.endswith(".jpg") or filename.endswith(".png"):
-        response.headers["Content-Type"] = "image/jpeg" if filename.endswith(".jpg") else "image/png"
-    response.headers["Cache-Control"] = "max-age=180, public"
-    return response
-
+    return render_template("index.html")
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -85,9 +62,7 @@ def generate():
     sentence = data.get("sentence", "")
 
     if not sentence:
-        response = jsonify({"error": "No sentence provided."})
-        response.headers["Cache-Control"] = "no-store"
-        return response, 400
+        return jsonify({"error": "No sentence provided."}), 400
 
     # Process the sentence
     doc = nlp(sentence)
@@ -107,10 +82,7 @@ def generate():
     for eng_pos, spa_pos in POS_MAPPING.items():
         svg = svg.replace(f">{eng_pos}<", f">{spa_pos}<")
 
-    response = jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
-    response.headers["Cache-Control"] = "no-store"
-    return response
-
+    return jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
 
 if __name__ == "__main__":
     app.run(debug=True)
