@@ -51,23 +51,23 @@ DEP_LABELS_MAPPING = {
 
 @app.after_request
 def add_headers(response):
-    """Add headers to all responses."""
+    """Add headers globally."""
     response.headers["Content-Type"] = response.headers.get("Content-Type", "text/html; charset=utf-8")
-    response.headers["Cache-Control"] = "max-age=180, public"
+    response.headers["Cache-Control"] = response.headers.get("Cache-Control", "no-store")
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
 
 @app.route("/")
 def index():
-    response = make_response(render_template("index.html"))
-    response.headers["Cache-Control"] = "no-store"
-    return response
+    html_response = make_response(render_template("index.html"))
+    html_response.headers["Cache-Control"] = "no-store"
+    return html_response
 
 
 @app.route("/static/<path:filename>")
 def serve_static(filename):
-    """Serve static files with appropriate headers."""
+    """Serve static files with proper cache and content-type."""
     response = make_response(send_from_directory("static", filename))
     if filename.endswith(".css"):
         response.headers["Content-Type"] = "text/css; charset=utf-8"
@@ -76,7 +76,6 @@ def serve_static(filename):
     elif filename.endswith(".jpg") or filename.endswith(".png"):
         response.headers["Content-Type"] = "image/jpeg" if filename.endswith(".jpg") else "image/png"
     response.headers["Cache-Control"] = "max-age=180, public"
-    response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
 
@@ -86,7 +85,9 @@ def generate():
     sentence = data.get("sentence", "")
 
     if not sentence:
-        return jsonify({"error": "No sentence provided."}), 400
+        response = jsonify({"error": "No sentence provided."})
+        response.headers["Cache-Control"] = "no-store"
+        return response, 400
 
     # Process the sentence
     doc = nlp(sentence)
@@ -108,7 +109,6 @@ def generate():
 
     response = jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
     response.headers["Cache-Control"] = "no-store"
-    response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
 
