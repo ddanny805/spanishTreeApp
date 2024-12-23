@@ -1,7 +1,6 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template, send_from_directory, make_response
 import spacy
 from spacy import displacy
-import os
 
 app = Flask(__name__)
 
@@ -49,26 +48,37 @@ DEP_LABELS_MAPPING = {
     "dep": "dependencia",
 }
 
+
 @app.after_request
 def add_headers(response):
-    """Add required headers to all responses."""
-    response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    response.headers['Cache-Control'] = 'max-age=180, public'
-    response.headers['X-Content-Type-Options'] = 'nosniff'
+    """Add headers to all responses."""
+    response.headers["Content-Type"] = response.headers.get("Content-Type", "text/html; charset=utf-8")
+    response.headers["Cache-Control"] = "max-age=180, public"
+    response.headers["X-Content-Type-Options"] = "nosniff"
     return response
+
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    response = make_response(render_template("index.html"))
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
 
 @app.route("/static/<path:filename>")
 def serve_static(filename):
     """Serve static files with appropriate headers."""
-    response = send_from_directory('static', filename)
-    response.headers['Content-Type'] = 'text/css; charset=utf-8' if filename.endswith('.css') else response.headers['Content-Type']
-    response.headers['Cache-Control'] = 'max-age=180, public'
-    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response = make_response(send_from_directory("static", filename))
+    if filename.endswith(".css"):
+        response.headers["Content-Type"] = "text/css; charset=utf-8"
+    elif filename.endswith(".js"):
+        response.headers["Content-Type"] = "application/javascript; charset=utf-8"
+    elif filename.endswith(".jpg") or filename.endswith(".png"):
+        response.headers["Content-Type"] = "image/jpeg" if filename.endswith(".jpg") else "image/png"
+    response.headers["Cache-Control"] = "max-age=180, public"
+    response.headers["X-Content-Type-Options"] = "nosniff"
     return response
+
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -96,8 +106,11 @@ def generate():
     for eng_pos, spa_pos in POS_MAPPING.items():
         svg = svg.replace(f">{eng_pos}<", f">{spa_pos}<")
 
-    return jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
+    response = jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
 
 if __name__ == "__main__":
     app.run(debug=True)
-
