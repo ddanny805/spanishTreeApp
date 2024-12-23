@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template, make_response
 import spacy
 from spacy import displacy
+import time
 
 app = Flask(__name__)
 
@@ -51,7 +52,9 @@ DEP_LABELS_MAPPING = {
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    # Ensure cache busting for static files by appending version number
+    version = int(time.time())  # or use a static version like 'v1.0.0'
+    return render_template("index.html", version=version)
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -84,7 +87,7 @@ def generate():
         jsonify({"breakdown": "\n".join(breakdown), "tree": svg})
     )
     response.headers["Content-Type"] = "application/json; charset=utf-8"
-    response.headers["Cache-Control"] = "max-age=180, must-revalidate"
+    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"  # Strong cache control
     response.headers["X-Content-Type-Options"] = "nosniff"
     
     return response
